@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commander Match Logger</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 500px; margin: 0 auto; }
+        h1 { text-align: center; color: #e0e0e0; }
+        .form-group { margin-bottom: 15px; background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #aaa; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; background: #2d2d2d; border: 1px solid #444; color: #fff; border-radius: 4px; }
+        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        button:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+
+    <h1>Log Commander Match</h1>
+    
+    <div class="form-group">
+        <label for="winnerName">Winner's Name</label>
+        <input type="text" id="winnerName" placeholder="e.g., Alex">
+    </div>
+
+    <div class="form-group">
+        <label for="winnerDeck">Winning Commander / Deck</label>
+        <input type="text" id="winnerDeck" placeholder="e.g., Urza, Chief Artificer">
+    </div>
+
+    <div class="form-group">
+        <label for="allPlayers">All Players in Pod (Comma separated)</label>
+        <input type="text" id="allPlayers" placeholder="Alex, Tyler, Sam, Jordan">
+    </div>
+
+    <div class="form-group">
+        <label for="allDecks">All Decks in Pod (Comma separated)</label>
+        <input type="text" id="allDecks" placeholder="Urza, Krenko, Atraxa, Lathril">
+    </div>
+
+    <button onclick="submitMatch()">Send to Google Sheet</button>
+
+    <script>
+        const webAppUrl = "https://script.google.com/u/0/home/projects/14PbsKdvN5Y7F3_R_g1PPjdNZJ7ZDLQzD6yx9-1RxoJD2nqe6uIW5WRC8/edit"; // <--- Paste your deployment URL here!
+
+        function submitMatch() {
+            const matchData = {
+                winnerName: document.getElementById('winnerName').value,
+                winnerDeck: document.getElementById('winnerDeck').value,
+                players: document.getElementById('allPlayers').value.split(',').map(s => s.trim()),
+                decks: document.getElementById('allDecks').value.split(',').map(s => s.trim())
+            };
+
+            if (!matchData.winnerName || !matchData.winnerDeck) {
+                alert("Please fill out at least the winner's name and deck!");
+                return;
+            }
+
+            fetch(webAppUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(matchData)
+            })
+            .then(() => {
+                alert("Game logged successfully! Checking your spreadsheet now.");
+                // Optional: Clear the form fields here
+                document.getElementById('winnerName').value = '';
+                document.getElementById('winnerDeck').value = '';
+            })
+            .catch(err => alert("Error logging game: " + err));
+        }
+    </script>
+</body>
+</html>
