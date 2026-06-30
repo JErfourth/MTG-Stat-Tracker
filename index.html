@@ -2,73 +2,652 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commander Match Logger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MTG Commander Match Logger</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 500px; margin: 0 auto; }
-        h1 { text-align: center; color: #e0e0e0; }
-        .form-group { margin-bottom: 15px; background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #aaa; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; background: #2d2d2d; border: 1px solid #444; color: #fff; border-radius: 4px; }
-        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        button:hover { background: #1d4ed8; }
+        /* Custom scrollbar and subtle transitions */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+        /* Lock viewport scale for better mobile touch experience */
+        body {
+            touch-action: manipulation;
+        }
     </style>
 </head>
-<body>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-sans select-none">
 
-    <h1>Log Commander Match</h1>
-    
-    <div class="form-group">
-        <label for="winnerName">Winner's Name</label>
-        <input type="text" id="winnerName" placeholder="e.g., Alex">
+    <!-- App Header -->
+    <header class="bg-gray-900 border-b border-gray-800 py-3 px-4 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-2">
+            <span class="text-rose-500"><i data-lucide="swords" class="w-6 h-6"></i></span>
+            <h1 class="font-extrabold text-lg tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">COMMANDER LOGGER</h1>
+        </div>
+        <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white transition">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+        </button>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col max-w-lg w-full mx-auto p-4 pb-24">
+        
+        <!-- STEP 1: LOBBY / SETUP -->
+        <section id="setup-screen" class="space-y-6">
+            <!-- Game Metadata -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3 shadow-xl">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-rose-500"></i> Match Metadata
+                </h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Event Type</label>
+                        <select id="event-type" onchange="suggestEventName()" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:border-rose-500 text-white">
+                            <option value="Casual">Casual</option>
+                            <option value="Locals">Locals</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Event Date Label</label>
+                        <input type="text" id="event-label" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:border-rose-500 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Round Number</label>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustRound(-1)" class="bg-gray-800 border border-gray-700 rounded-lg w-10 h-10 flex items-center justify-center font-bold hover:bg-gray-700">-</button>
+                        <input type="number" id="round-num" value="1" min="1" class="flex-grow text-center bg-gray-800 border border-gray-700 rounded-lg p-2 font-bold focus:outline-none text-white">
+                        <button onclick="adjustRound(1)" class="bg-gray-800 border border-gray-700 rounded-lg w-10 h-10 flex items-center justify-center font-bold hover:bg-gray-700">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Selection Grid -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3 shadow-xl">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center justify-between">
+                    <span class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-rose-500"></i> Select Pod Players</span>
+                    <span id="player-count-badge" class="text-xs bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full">0/4 Selected</span>
+                </h2>
+                
+                <div id="roster-grid" class="grid grid-cols-2 gap-2">
+                    <!-- Dynamic buttons injected here -->
+                </div>
+            </div>
+
+            <!-- Selected Players Deck Configuration -->
+            <div id="deck-config-card" class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-4 shadow-xl hidden">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i> Set Decks & Statuses
+                </h2>
+                <div id="deck-setup-list" class="space-y-3">
+                    <!-- Players selected above populate here with input fields and quick deck options -->
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <button id="start-game-btn" onclick="startGame()" disabled class="w-full py-4 bg-gray-800 text-gray-500 border border-gray-700 rounded-xl font-extrabold tracking-widest text-lg transition duration-200 cursor-not-allowed shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="play" class="w-5 h-5"></i> START LIFE COUNTER
+            </button>
+        </section>
+
+        <!-- STEP 2: ACTIVE GAME / LIFE COUNTER -->
+        <section id="game-screen" class="hidden space-y-4">
+            <!-- Dynamic Grid for 4 players -->
+            <div id="life-counter-grid" class="grid grid-cols-2 gap-3 min-h-[400px]">
+                <!-- Injected with player interaction cards -->
+            </div>
+
+            <!-- Complete Game Panel -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3 mt-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-400 uppercase font-bold">Game Status</span>
+                    <span id="game-live-badge" class="flex items-center gap-1.5 text-xs text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Match in Progress</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="endGameEarly()" class="w-1/2 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm font-bold text-gray-300 hover:bg-gray-700 transition">
+                        Force Match End
+                    </button>
+                    <button onclick="resetApp()" class="w-1/2 py-3 bg-red-950/40 border border-red-900/40 rounded-lg text-sm font-bold text-red-300 hover:bg-red-900/30 transition">
+                        Reset Board
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: LOG MATCH FORM -->
+        <section id="log-screen" class="hidden space-y-4">
+            <div class="bg-gray-900 p-5 rounded-xl border border-gray-800 space-y-4 shadow-2xl">
+                <h2 class="text-lg font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center justify-center gap-2">
+                    <i data-lucide="trophy" class="w-6 h-6 text-amber-400"></i> Match Settled!
+                </h2>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider font-bold">Winner</label>
+                    <select id="winner-select" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 font-semibold text-white focus:outline-none focus:border-rose-500">
+                        <!-- Filled with pod participants -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider font-bold">Winner's Deck</label>
+                    <input type="text" id="winner-deck-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-rose-500" placeholder="e.g., Narset">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider font-bold">Match Notes</label>
+                    <textarea id="match-notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-rose-500 resize-none" placeholder="e.g., Tyler can't math (multiplier hell)"></textarea>
+                </div>
+
+                <button onclick="submitMatchToSheets()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-extrabold tracking-widest text-lg shadow-lg hover:from-emerald-500 hover:to-teal-500 transition duration-150 flex items-center justify-center gap-2">
+                    <i data-lucide="cloud-lightning" class="w-5 h-5"></i> LOG TO SPREADSHEET
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-md p-6 rounded-2xl space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 class="font-extrabold text-lg text-gray-200 flex items-center gap-2"><i data-lucide="link" class="w-5 h-5 text-rose-500"></i> API Endpoint Settings</h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <div class="space-y-3">
+                <p class="text-xs text-gray-400">Paste your Google Apps Script Deployment URL below. The app uses this to write to your Google Sheets tab dynamically.</p>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Web App URL</label>
+                    <input type="text" id="api-url-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-rose-500" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+            </div>
+            <div class="pt-3 flex justify-end gap-2">
+                <button onclick="toggleSettingsModal()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm hover:bg-gray-700">Cancel</button>
+                <button onclick="saveApiUrl()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-500">Save Configuration</button>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label for="winnerDeck">Winning Commander / Deck</label>
-        <input type="text" id="winnerDeck" placeholder="e.g., Urza, Chief Artificer">
+    <!-- Screen Loading / Sync Overlay -->
+    <div id="sync-overlay" class="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6 hidden">
+        <div class="space-y-4 text-center">
+            <div class="animate-spin text-rose-500 flex justify-center">
+                <i data-lucide="loader-2" class="w-16 h-16"></i>
+            </div>
+            <h4 class="text-xl font-extrabold tracking-wide text-gray-100">Transmitting Game Logs...</h4>
+            <p class="text-sm text-gray-400">Writing match details cleanly to your dynamic Magic Chart.</p>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label for="allPlayers">All Players in Pod (Comma separated)</label>
-        <input type="text" id="allPlayers" placeholder="Alex, Tyler, Sam, Jordan">
-    </div>
-
-    <div class="form-group">
-        <label for="allDecks">All Decks in Pod (Comma separated)</label>
-        <input type="text" id="allDecks" placeholder="Urza, Krenko, Atraxa, Lathril">
-    </div>
-
-    <button onclick="submitMatch()">Send to Google Sheet</button>
-
+    <!-- Main Controller Logic -->
     <script>
-        const webAppUrl = "https://script.google.com/u/0/home/projects/14PbsKdvN5Y7F3_R_g1PPjdNZJ7ZDLQzD6yx9-1RxoJD2nqe6uIW5WRC8/edit"; // <--- Paste your deployment URL here!
+        // Pre-configured player roster & historic deck lists for fast selection
+        const playerProfileMap = {
+            'Jordon': { name: 'Jordon', decks: ['Teysa', 'Iron Man', 'Kinnan', 'Queen', 'Narset', 'Merem'] },
+            'Devon': { name: 'Devon', decks: ['Edgar', 'Satoru', 'Niv', 'Nekusar'] },
+            'Xavier': { name: 'Xavier', decks: ['Muscle', 'Pantlaza', 'Six', 'Teysa', 'Lathril'] },
+            'Thomas': { name: 'Thomas', decks: ['Gev', 'Mirko Vosk', 'Rakdos', 'Kaalia'] },
+            'Michael': { name: 'Michael', decks: ['Gale Waterdeep', 'Glunch', 'Ashling', 'Ur Dragon'] },
+            'Connor': { name: 'Connor', decks: ['Astor', 'Neyith', 'Ur Dragon', 'Krenko'] },
+            'Tyler': { name: 'Tyler', decks: ['Kenny', 'Slivers', 'Krenko'] },
+            'Jiordan': { name: 'Jiordan', decks: ['Gale Waterdeep', 'Neyith'] },
+            'Andrew': { name: 'Andrew', decks: ['Dihada', 'Glunch'] },
+            'Ian': { name: 'Ian', decks: ['Aragorn', 'Atraxa'] }
+        };
 
-        function submitMatch() {
-            const matchData = {
-                winnerName: document.getElementById('winnerName').value,
-                winnerDeck: document.getElementById('winnerDeck').value,
-                players: document.getElementById('allPlayers').value.split(',').map(s => s.trim()),
-                decks: document.getElementById('allDecks').value.split(',').map(s => s.trim())
-            };
+        const rosterNames = Object.keys(playerProfileMap);
+        let selectedPodPlayers = [];
+        let activeMatch = {
+            event: '',
+            round: 1,
+            players: [], // { name, deck, life: 40, status: 'active' }
+            winner: '',
+            winnerDeck: '',
+            notes: ''
+        };
 
-            if (!matchData.winnerName || !matchData.winnerDeck) {
-                alert("Please fill out at least the winner's name and deck!");
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadSavedConfig();
+            suggestEventName();
+            renderRosterGrid();
+        });
+
+        // Config & Settings Handlers
+        function loadSavedConfig() {
+            const savedUrl = localStorage.getItem('mtg_api_url');
+            if (savedUrl) {
+                document.getElementById('api-url-input').value = savedUrl;
+            }
+            const savedEvent = localStorage.getItem('mtg_event_type');
+            if (savedEvent) {
+                document.getElementById('event-type').value = savedEvent;
+            }
+            const savedRound = localStorage.getItem('mtg_round_num');
+            if (savedRound) {
+                document.getElementById('round-num').value = savedRound;
+            }
+        }
+
+        function saveApiUrl() {
+            const urlValue = document.getElementById('api-url-input').value.trim();
+            localStorage.setItem('mtg_api_url', urlValue);
+            toggleSettingsModal();
+        }
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function suggestEventName() {
+            const eventType = document.getElementById('event-type').value;
+            const today = new Date();
+            const yearShort = today.getFullYear().toString().slice(-2);
+            const dateStr = `${today.getMonth() + 1}.${today.getDate()}.${yearShort}`;
+            const computedLabel = `${eventType} ${dateStr}`;
+            document.getElementById('event-label').value = computedLabel;
+            localStorage.setItem('mtg_event_type', eventType);
+        }
+
+        function adjustRound(amount) {
+            const input = document.getElementById('round-num');
+            let current = parseInt(input.value) || 1;
+            current = Math.max(1, current + amount);
+            input.value = current;
+            localStorage.setItem('mtg_round_num', current);
+        }
+
+        // Roster Selection Screen
+        function renderRosterGrid() {
+            const container = document.getElementById('roster-grid');
+            container.innerHTML = '';
+            
+            rosterNames.forEach(name => {
+                const isSelected = selectedPodPlayers.includes(name);
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-xl border text-sm font-bold tracking-wide transition duration-150 flex items-center justify-between ${
+                    isSelected 
+                    ? 'bg-rose-900/30 border-rose-500 text-white shadow-md' 
+                    : 'bg-gray-800/40 border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-200'
+                }`;
+                
+                // Active highlight indicator
+                const dotHtml = isSelected 
+                    ? `<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>`
+                    : `<span class="w-2.5 h-2.5 rounded-full bg-gray-800 border border-gray-600"></span>`;
+                
+                btn.innerHTML = `<span>${name}</span> ${dotHtml}`;
+                btn.onclick = () => togglePlayerSelection(name);
+                container.appendChild(btn);
+            });
+        }
+
+        function togglePlayerSelection(name) {
+            const index = selectedPodPlayers.indexOf(name);
+            if (index > -1) {
+                selectedPodPlayers.splice(index, 1);
+            } else {
+                if (selectedPodPlayers.length >= 4) {
+                    // Maximum 4 player pod limit
+                    return;
+                }
+                selectedPodPlayers.push(name);
+            }
+            
+            renderRosterGrid();
+            updateSetupControls();
+        }
+
+        function updateSetupControls() {
+            const badge = document.getElementById('player-count-badge');
+            const startBtn = document.getElementById('start-game-btn');
+            const configCard = document.getElementById('deck-config-card');
+            const listContainer = document.getElementById('deck-setup-list');
+            
+            badge.innerText = `${selectedPodPlayers.length}/4 Selected`;
+            
+            if (selectedPodPlayers.length > 0) {
+                configCard.classList.remove('hidden');
+                startBtn.removeAttribute('disabled');
+                startBtn.className = "w-full py-4 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white border-none rounded-xl font-extrabold tracking-widest text-lg transition duration-200 cursor-pointer shadow-lg flex items-center justify-center gap-2";
+                
+                // Render Config Inputs for Selected Players
+                listContainer.innerHTML = '';
+                selectedPodPlayers.forEach(name => {
+                    const profile = playerProfileMap[name];
+                    const row = document.createElement('div');
+                    row.className = "bg-gray-800/50 p-3 rounded-lg border border-gray-800 space-y-2";
+                    row.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="font-extrabold text-white text-sm">${name}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Status:</span>
+                                <select id="status-${name}" class="bg-gray-900 border border-gray-700 rounded text-xs px-1 py-0.5 text-rose-400 font-bold">
+                                    <option value="active">Active</option>
+                                    <option value="out">Out</option>
+                                    <option value="bye">Bye</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <input type="text" id="deck-${name}" value="${profile.decks[0] || ''}" 
+                                class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-white focus:outline-none focus:border-rose-500" 
+                                placeholder="Deck Name...">
+                            <div class="flex flex-wrap gap-1" id="quick-decks-${name}"></div>
+                        </div>
+                    `;
+                    listContainer.appendChild(row);
+
+                    // Add quick-select buttons for historic decks
+                    const quickDeckContainer = document.getElementById(`quick-decks-${name}`);
+                    profile.decks.slice(0, 4).forEach(deckName => {
+                        const quickBtn = document.createElement('button');
+                        quickBtn.className = "text-[10px] bg-gray-800 text-gray-400 border border-gray-700 px-2 py-0.5 rounded hover:bg-gray-700 hover:text-white transition";
+                        quickBtn.innerText = deckName;
+                        quickBtn.onclick = () => {
+                            document.getElementById(`deck-${name}`).value = deckName;
+                        };
+                        quickDeckContainer.appendChild(quickBtn);
+                    });
+                });
+            } else {
+                configCard.classList.add('hidden');
+                startBtn.setAttribute('disabled', 'true');
+                startBtn.className = "w-full py-4 bg-gray-800 text-gray-500 border border-gray-700 rounded-xl font-extrabold tracking-widest text-lg transition duration-200 cursor-not-allowed shadow-lg flex items-center justify-center gap-2";
+            }
+        }
+
+        // START GAME
+        function startGame() {
+            activeMatch.event = document.getElementById('event-label').value.trim();
+            activeMatch.round = parseInt(document.getElementById('round-num').value) || 1;
+            activeMatch.players = selectedPodPlayers.map(name => {
+                const deckInput = document.getElementById(`deck-${name}`).value.trim() || 'Unknown';
+                const statusSelect = document.getElementById(`status-${name}`).value;
+                return {
+                    name: name,
+                    deck: deckInput,
+                    life: 40,
+                    status: statusSelect
+                };
+            });
+
+            // Hide Setup Screen, Show Counter
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            renderLifeCounterGrid();
+        }
+
+        // ACTIVE LIFE COUNTER SCREEN
+        function renderLifeCounterGrid() {
+            const container = document.getElementById('life-counter-grid');
+            container.innerHTML = '';
+            
+            // Layout is customized dynamically to handle 1, 2, 3, or 4 players cleanly
+            const activePlayers = activeMatch.players;
+            
+            activePlayers.forEach(player => {
+                const isDead = player.life <= 0 || player.status !== 'active';
+                const card = document.createElement('div');
+                card.id = `life-card-${player.name}`;
+                card.className = `flex flex-col justify-between p-4 rounded-2xl border transition duration-200 relative overflow-hidden ${
+                    isDead 
+                    ? 'bg-gray-900/40 border-gray-850 opacity-40 text-gray-500' 
+                    : 'bg-gray-900 border-gray-800 shadow-xl'
+                }`;
+                
+                card.innerHTML = `
+                    <!-- Header with Name, Deck -->
+                    <div class="z-10">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-extrabold text-lg text-white tracking-wide">${player.name}</h3>
+                                <p class="text-[11px] text-gray-400 italic truncate max-w-[120px]">${player.deck}</p>
+                            </div>
+                            <!-- Status Selector inside game board -->
+                            <select onchange="updateLiveStatus('${player.name}', this.value)" class="bg-gray-800 text-[10px] font-bold py-1 px-1.5 rounded focus:outline-none">
+                                <option value="active" ${player.status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="out" ${player.status === 'out' ? 'selected' : ''}>Out</option>
+                                <option value="bye" ${player.status === 'bye' ? 'selected' : ''}>Bye</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Giant Life Value Display -->
+                    <div class="flex justify-center items-center py-6 z-10">
+                        <span id="life-val-${player.name}" class="text-6xl font-black tracking-tighter ${isDead ? 'text-gray-600 line-through' : 'text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-300'}">
+                            ${player.life}
+                        </span>
+                    </div>
+
+                    <!-- Touch Interactive Increments -->
+                    <div class="grid grid-cols-2 gap-2 z-10">
+                        <!-- Left decrements -->
+                        <div class="flex flex-col gap-1.5">
+                            <button onclick="changeLife('${player.name}', -1)" class="py-3 bg-red-950/25 border border-red-900/40 hover:bg-red-900/30 rounded-lg text-red-400 font-extrabold flex items-center justify-center gap-0.5 text-sm">
+                                -1
+                            </button>
+                            <button onclick="changeLife('${player.name}', -5)" class="py-2.5 bg-red-950/50 border border-red-900/60 hover:bg-red-900/50 rounded-lg text-red-300 font-extrabold text-xs">
+                                -5
+                            </button>
+                        </div>
+                        <!-- Right increments -->
+                        <div class="flex flex-col gap-1.5">
+                            <button onclick="changeLife('${player.name}', 1)" class="py-3 bg-emerald-950/20 border border-emerald-900/40 hover:bg-emerald-900/30 rounded-lg text-emerald-400 font-extrabold flex items-center justify-center gap-0.5 text-sm">
+                                +1
+                            </button>
+                            <button onclick="changeLife('${player.name}', 5)" class="py-2.5 bg-emerald-950/45 border border-emerald-900/60 hover:bg-emerald-900/50 rounded-lg text-emerald-300 font-extrabold text-xs">
+                                +5
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Watermark Indicator -->
+                    <div class="absolute right-[-20px] bottom-[-20px] text-gray-800 opacity-10 pointer-events-none">
+                        <i data-lucide="shield" class="w-32 h-32"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function changeLife(playerName, amt) {
+            const player = activeMatch.players.find(p => p.name === playerName);
+            if (!player) return;
+            
+            player.life = Math.max(0, player.life + amt);
+            
+            // Check if player died
+            if (player.life === 0 && player.status === 'active') {
+                player.status = 'out';
+            } else if (player.life > 0 && player.status === 'out') {
+                player.status = 'active';
+            }
+
+            // Sync visual UI elements
+            const cardEl = document.getElementById(`life-card-${playerName}`);
+            const textEl = document.getElementById(`life-val-${playerName}`);
+            textEl.innerText = player.life;
+
+            if (player.life <= 0 || player.status !== 'active') {
+                cardEl.className = "flex flex-col justify-between p-4 rounded-2xl border transition duration-200 relative overflow-hidden bg-gray-900/40 border-gray-850 opacity-40 text-gray-500";
+                textEl.classList.add('text-gray-600', 'line-through');
+                textEl.classList.remove('text-transparent', 'bg-clip-text', 'bg-gradient-to-br', 'from-white', 'to-gray-300');
+            } else {
+                cardEl.className = "flex flex-col justify-between p-4 rounded-2xl border transition duration-200 relative overflow-hidden bg-gray-900 border-gray-800 shadow-xl";
+                textEl.classList.remove('text-gray-600', 'line-through');
+                textEl.classList.add('text-transparent', 'bg-clip-text', 'bg-gradient-to-br', 'from-white', 'to-gray-300');
+            }
+
+            checkAutoGameEnd();
+        }
+
+        function updateLiveStatus(playerName, newStatus) {
+            const player = activeMatch.players.find(p => p.name === playerName);
+            if (!player) return;
+            
+            player.status = newStatus;
+            
+            // Refresh complete panel to guarantee clean boundaries
+            renderLifeCounterGrid();
+            checkAutoGameEnd();
+        }
+
+        // End Phase Trigger Logic
+        function checkAutoGameEnd() {
+            // Find players who are still active (not eliminated or on out/bye)
+            const survivors = activeMatch.players.filter(p => p.status === 'active' && p.life > 0);
+            
+            // If only one player has life left, trigger match complete state
+            if (survivors.length === 1) {
+                initiateMatchSettlement(survivors[0]);
+            }
+        }
+
+        function endGameEarly() {
+            // Pick default survivor or first active player
+            const survivors = activeMatch.players.filter(p => p.status === 'active' && p.life > 0);
+            const chosenWinner = survivors.length > 0 ? survivors[0] : activeMatch.players[0];
+            initiateMatchSettlement(chosenWinner);
+        }
+
+        function initiateMatchSettlement(winnerObject) {
+            // Shift screens
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('log-screen').classList.remove('hidden');
+
+            // Populate winner selection form options dynamically
+            const winnerSelect = document.getElementById('winner-select');
+            winnerSelect.innerHTML = '';
+            
+            activeMatch.players.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.innerText = p.name;
+                if (winnerObject && p.name === winnerObject.name) {
+                    opt.selected = true;
+                }
+                winnerSelect.appendChild(opt);
+            });
+
+            // Auto fill winning deck info
+            updateWinnerDeckInput();
+            winnerSelect.onchange = updateWinnerDeckInput;
+        }
+
+        function updateWinnerDeckInput() {
+            const selectedWinnerName = document.getElementById('winner-select').value;
+            const winnerObj = activeMatch.players.find(p => p.name === selectedWinnerName);
+            if (winnerObj) {
+                document.getElementById('winner-deck-input').value = winnerObj.deck;
+            }
+        }
+
+        // SUBMIT TO GOOGLE SHEET
+        function submitMatchToSheets() {
+            const apiEndpoint = localStorage.getItem('mtg_api_url');
+            
+            if (!apiEndpoint) {
+                alert("Please click the gear icon in the top right corner and save your Google Apps Script URL first!");
                 return;
             }
 
-            fetch(webAppUrl, {
+            // Show Transmitting spinner
+            document.getElementById('sync-overlay').classList.remove('hidden');
+
+            // Collect payload
+            const winnerName = document.getElementById('winner-select').value;
+            const winnerDeck = document.getElementById('winner-deck-input').value.trim();
+            const notes = document.getElementById('match-notes').value.trim();
+
+            // Transform pod participants back to match the dynamic script expectation:
+            // [{ name: 'jordon', deck: 'Narset', status: 'active' }, ...]
+            const activePlayersPayload = activeMatch.players.map(p => {
+                return {
+                    name: p.name.toLowerCase().trim(),
+                    deck: p.deck,
+                    status: p.status // 'active', 'out', or 'bye'
+                };
+            });
+
+            const finalPayload = {
+                event: activeMatch.event,
+                round: activeMatch.round,
+                winner: winnerName,
+                winnerDeck: winnerDeck,
+                notes: notes,
+                activePlayers: activePlayersPayload
+            };
+
+            // Post request to Google Apps Script
+            fetch(apiEndpoint, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(matchData)
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(finalPayload)
             })
             .then(() => {
-                alert("Game logged successfully! Checking your spreadsheet now.");
-                // Optional: Clear the form fields here
-                document.getElementById('winnerName').value = '';
-                document.getElementById('winnerDeck').value = '';
+                // Since 'no-cors' does not return standard body reads easily, 
+                // we treat a clean execution callback as a successful write
+                setTimeout(() => {
+                    document.getElementById('sync-overlay').classList.add('hidden');
+                    
+                    // Trigger custom visual confirm modal
+                    alert(`Match logged successfully! ${winnerName} won with ${winnerDeck}.`);
+                    
+                    // Clean up for next round
+                    incrementAndResetForNextRound();
+                }, 1000);
             })
-            .catch(err => alert("Error logging game: " + err));
+            .catch(error => {
+                document.getElementById('sync-overlay').classList.add('hidden');
+                alert(`Transmission failed: ${error.message}\nDouble check that your Web App is correctly deployed as 'Anyone' on Apps Script!`);
+            });
+        }
+
+        function incrementAndResetForNextRound() {
+            // Auto increment round in setup screen for speed entry on next game
+            const currentRound = parseInt(document.getElementById('round-num').value) || 1;
+            document.getElementById('round-num').value = currentRound + 1;
+            localStorage.setItem('mtg_round_num', currentRound + 1);
+
+            resetApp();
+        }
+
+        function resetApp() {
+            // Reset to setup state cleanly
+            selectedPodPlayers = [];
+            activeMatch = {
+                event: '',
+                round: 1,
+                players: [],
+                winner: '',
+                winnerDeck: '',
+                notes: ''
+            };
+
+            document.getElementById('match-notes').value = '';
+            document.getElementById('log-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+
+            renderRosterGrid();
+            updateSetupControls();
+            suggestEventName();
         }
     </script>
 </body>
