@@ -9,115 +9,123 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Custom scrollbar and subtle transitions */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
         ::-webkit-scrollbar-track {
-            background: #111827;
+            background: #0b0f17;
         }
         ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 3px;
+            background: #1f293d;
+            border-radius: 2px;
         }
-        /* Lock viewport scale for better mobile touch experience */
         body {
             touch-action: manipulation;
         }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-sans select-none">
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-sans select-none pb-8">
 
     <!-- App Header -->
-    <header class="bg-gray-900 border-b border-gray-800 py-3 px-4 flex items-center justify-between sticky top-0 z-50">
+    <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 py-3.5 px-4 flex items-center justify-between sticky top-0 z-40">
         <div class="flex items-center space-x-2">
             <span class="text-rose-500"><i data-lucide="swords" class="w-6 h-6"></i></span>
-            <h1 class="font-extrabold text-lg tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">COMMANDER LOGGER</h1>
+            <h1 class="font-extrabold text-md tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">COMMANDER LOGGER</h1>
         </div>
         <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white transition">
-            <i data-lucide="settings" class="w-6 h-6"></i>
+            <i data-lucide="settings" class="w-5.5 h-5.5"></i>
         </button>
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col max-w-lg w-full mx-auto p-4 pb-24">
+    <main class="flex-grow flex flex-col max-w-lg w-full mx-auto p-4 space-y-4">
         
         <!-- STEP 1: LOBBY / SETUP -->
-        <section id="setup-screen" class="space-y-6">
+        <section id="setup-screen" class="space-y-4">
             <!-- Game Metadata -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3 shadow-xl">
-                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-gray-900/60 border border-gray-800/80 p-4 rounded-2xl space-y-3 shadow-xl">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="info" class="w-4 h-4 text-rose-500"></i> Match Metadata
                 </h2>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Event Type</label>
-                        <select id="event-type" onchange="suggestEventName()" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:border-rose-500 text-white">
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-wider mb-1">Event Type</label>
+                        <select id="event-type" onchange="suggestEventName()" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs focus:outline-none focus:border-rose-500 text-white font-medium">
                             <option value="Casual">Casual</option>
                             <option value="Locals">Locals</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Event Date Label</label>
-                        <input type="text" id="event-label" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:border-rose-500 text-white">
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-wider mb-1">Date Label</label>
+                        <input type="text" id="event-label" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs focus:outline-none focus:border-rose-500 text-white font-medium">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Round Number</label>
+                    <label class="block text-[10px] text-gray-500 uppercase tracking-wider mb-1">Round Number</label>
                     <div class="flex items-center space-x-2">
-                        <button onclick="adjustRound(-1)" class="bg-gray-800 border border-gray-700 rounded-lg w-10 h-10 flex items-center justify-center font-bold hover:bg-gray-700">-</button>
-                        <input type="number" id="round-num" value="1" min="1" class="flex-grow text-center bg-gray-800 border border-gray-700 rounded-lg p-2 font-bold focus:outline-none text-white">
-                        <button onclick="adjustRound(1)" class="bg-gray-800 border border-gray-700 rounded-lg w-10 h-10 flex items-center justify-center font-bold hover:bg-gray-700">+</button>
+                        <button onclick="adjustRound(-1)" class="bg-gray-950 border border-gray-850 rounded-lg w-9 h-9 flex items-center justify-center font-bold hover:bg-gray-800 text-sm">-</button>
+                        <input type="number" id="round-num" value="1" min="1" class="flex-grow text-center bg-gray-950 border border-gray-850 rounded-lg p-2 font-bold focus:outline-none text-xs text-white">
+                        <button onclick="adjustRound(1)" class="bg-gray-950 border border-gray-850 rounded-lg w-9 h-9 flex items-center justify-center font-bold hover:bg-gray-800 text-sm">+</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Player Selection Grid -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3 shadow-xl">
-                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center justify-between">
-                    <span class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-rose-500"></i> Select Pod Players</span>
-                    <span id="player-count-badge" class="text-xs bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full">0/4 Selected</span>
-                </h2>
+            <!-- Player Selection card (Minimalized Edition) -->
+            <div class="bg-gray-900/60 border border-gray-800/80 p-4 rounded-2xl space-y-4 shadow-xl">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-rose-500"></i> Select Pod Players
+                    </h2>
+                    <span id="player-count-badge" class="text-[10px] font-bold bg-rose-950/60 text-rose-300 border border-rose-800/60 px-2 py-0.5 rounded-full">0/4 Selected</span>
+                </div>
                 
-                <div id="roster-grid" class="grid grid-cols-2 gap-2">
-                    <!-- Dynamic buttons injected here -->
+                <!-- Compact Badge Roster -->
+                <div id="roster-grid" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
+                    <!-- Dynamic badges injected here -->
+                </div>
+
+                <!-- Custom Player Creator Inline -->
+                <div class="pt-3 border-t border-gray-800/50 flex gap-2">
+                    <input type="text" id="new-player-input" placeholder="New Player Name..." class="flex-grow bg-gray-950 border border-gray-850 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500" onkeydown="handleNewPlayerKey(event)">
+                    <button onclick="createNewPlayer()" class="px-4 py-2 bg-rose-950/40 border border-rose-800/40 text-rose-300 text-xs font-bold rounded-xl hover:bg-rose-900/30 flex items-center gap-1 transition">
+                        <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Add
+                    </button>
                 </div>
             </div>
 
             <!-- Selected Players Deck Configuration -->
-            <div id="deck-config-card" class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-4 shadow-xl hidden">
-                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+            <div id="deck-config-card" class="bg-gray-900/60 border border-gray-800/80 p-4 rounded-2xl space-y-4 shadow-xl hidden">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i> Set Decks & Statuses
                 </h2>
                 <div id="deck-setup-list" class="space-y-3">
-                    <!-- Players selected above populate here with input fields and quick deck options -->
+                    <!-- Players selected above populate here -->
                 </div>
             </div>
 
             <!-- Start Button -->
-            <button id="start-game-btn" onclick="startGame()" disabled class="w-full py-4 bg-gray-800 text-gray-500 border border-gray-700 rounded-xl font-extrabold tracking-widest text-lg transition duration-200 cursor-not-allowed shadow-lg flex items-center justify-center gap-2">
-                <i data-lucide="play" class="w-5 h-5"></i> START LIFE COUNTER
+            <button id="start-game-btn" onclick="startGame()" disabled class="w-full py-3.5 bg-gray-800 text-gray-500 border border-gray-700/60 rounded-xl font-extrabold tracking-widest text-sm transition duration-200 cursor-not-allowed shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="play" class="w-4 h-4"></i> START LIFE COUNTER
             </button>
         </section>
 
         <!-- STEP 2: ACTIVE GAME / LIFE COUNTER -->
-        <section id="game-screen" class="hidden space-y-4">
-            <!-- Dynamic Grid for 4 players -->
-            <div id="life-counter-grid" class="grid grid-cols-2 gap-3 min-h-[400px]">
+        <section id="game-screen" class="hidden space-y-4 animate-fadeIn">
+            <div id="life-counter-grid" class="grid grid-cols-2 gap-3 min-h-[380px]">
                 <!-- Injected with player interaction cards -->
             </div>
 
             <!-- Complete Game Panel -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3 mt-4">
+            <div class="bg-gray-900/60 border border-gray-800/80 p-4 rounded-2xl space-y-3 mt-4">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-400 uppercase font-bold">Game Status</span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Game Status</span>
                     <span id="game-live-badge" class="flex items-center gap-1.5 text-xs text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Match in Progress</span>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="endGameEarly()" class="w-1/2 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm font-bold text-gray-300 hover:bg-gray-700 transition">
+                    <button onclick="endGameEarly()" class="w-1/2 py-3 bg-gray-950 border border-gray-850 rounded-xl text-xs font-bold text-gray-300 hover:bg-gray-800 transition">
                         Force Match End
                     </button>
-                    <button onclick="resetApp()" class="w-1/2 py-3 bg-red-950/40 border border-red-900/40 rounded-lg text-sm font-bold text-red-300 hover:bg-red-900/30 transition">
+                    <button onclick="resetApp()" class="w-1/2 py-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs font-bold text-red-300 hover:bg-red-900/30 transition">
                         Reset Board
                     </button>
                 </div>
@@ -126,30 +134,30 @@
 
         <!-- STEP 3: LOG MATCH FORM -->
         <section id="log-screen" class="hidden space-y-4">
-            <div class="bg-gray-900 p-5 rounded-xl border border-gray-800 space-y-4 shadow-2xl">
-                <h2 class="text-lg font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center justify-center gap-2">
-                    <i data-lucide="trophy" class="w-6 h-6 text-amber-400"></i> Match Settled!
+            <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-2xl">
+                <h2 class="text-md font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center justify-center gap-2">
+                    <i data-lucide="trophy" class="w-5 h-5 text-amber-400 animate-bounce"></i> Match Settled!
                 </h2>
 
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider font-bold">Winner</label>
-                    <select id="winner-select" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 font-semibold text-white focus:outline-none focus:border-rose-500">
-                        <!-- Filled with pod participants -->
+                    <label class="block text-[10px] text-gray-400 mb-1 uppercase tracking-wider font-bold">Winner</label>
+                    <select id="winner-select" class="w-full bg-gray-950 border border-gray-850 rounded-xl p-3 text-xs font-semibold text-white focus:outline-none focus:border-rose-500">
+                        <!-- Filled dynamically -->
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider font-bold">Winner's Deck</label>
-                    <input type="text" id="winner-deck-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-rose-500" placeholder="e.g., Narset">
+                    <label class="block text-[10px] text-gray-400 mb-1 uppercase tracking-wider font-bold">Winner's Deck</label>
+                    <input type="text" id="winner-deck-input" class="w-full bg-gray-950 border border-gray-850 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500" placeholder="e.g., Narset">
                 </div>
 
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider font-bold">Match Notes</label>
-                    <textarea id="match-notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-rose-500 resize-none" placeholder="e.g., Tyler can't math (multiplier hell)"></textarea>
+                    <label class="block text-[10px] text-gray-400 mb-1 uppercase tracking-wider font-bold">Match Notes</label>
+                    <textarea id="match-notes" rows="3" class="w-full bg-gray-950 border border-gray-850 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 resize-none" placeholder="e.g., Tyler can't math (multiplier hell)"></textarea>
                 </div>
 
-                <button onclick="submitMatchToSheets()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-extrabold tracking-widest text-lg shadow-lg hover:from-emerald-500 hover:to-teal-500 transition duration-150 flex items-center justify-center gap-2">
-                    <i data-lucide="cloud-lightning" class="w-5 h-5"></i> LOG TO SPREADSHEET
+                <button onclick="submitMatchToSheets()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-extrabold tracking-widest text-sm shadow-lg hover:from-emerald-500 hover:to-teal-500 transition duration-150 flex items-center justify-center gap-2">
+                    <i data-lucide="cloud-lightning" class="w-4 h-4"></i> LOG TO SPREADSHEET
                 </button>
             </div>
         </section>
@@ -159,38 +167,40 @@
     <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md p-6 rounded-2xl space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                <h3 class="font-extrabold text-lg text-gray-200 flex items-center gap-2"><i data-lucide="link" class="w-5 h-5 text-rose-500"></i> API Endpoint Settings</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <h3 class="font-extrabold text-md text-gray-200 flex items-center gap-2"><i data-lucide="link" class="w-4.5 h-4.5 text-rose-500"></i> API Endpoint Settings</h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="space-y-3">
-                <p class="text-xs text-gray-400">Paste your Google Apps Script Deployment URL below. The app uses this to write to your Google Sheets tab dynamically.</p>
+                <p class="text-[11px] text-gray-400">Paste your Google Apps Script Deployment URL below. The app uses this to write to your Google Sheets tab dynamically.</p>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Web App URL</label>
-                    <input type="text" id="api-url-input" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-rose-500" placeholder="https://script.google.com/macros/s/.../exec">
+                    <label class="block text-[10px] text-gray-400 mb-1">Web App URL</label>
+                    <input type="text" id="api-url-input" class="w-full bg-gray-950 border border-gray-850 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500" placeholder="https://script.google.com/macros/s/.../exec">
                 </div>
             </div>
             <div class="pt-3 flex justify-end gap-2">
-                <button onclick="toggleSettingsModal()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm hover:bg-gray-700">Cancel</button>
-                <button onclick="saveApiUrl()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-500">Save Configuration</button>
+                <button onclick="toggleSettingsModal()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700">Cancel</button>
+                <button onclick="saveApiUrl()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-500">Save Configuration</button>
             </div>
         </div>
     </div>
 
     <!-- Screen Loading / Sync Overlay -->
     <div id="sync-overlay" class="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6 hidden">
-        <div class="space-y-4 text-center">
+        <div class="space-y-4 text-center animate-pulse">
             <div class="animate-spin text-rose-500 flex justify-center">
-                <i data-lucide="loader-2" class="w-16 h-16"></i>
+                <i data-lucide="loader-2" class="w-12 h-12"></i>
             </div>
-            <h4 class="text-xl font-extrabold tracking-wide text-gray-100">Transmitting Game Logs...</h4>
-            <p class="text-sm text-gray-400">Writing match details cleanly to your dynamic Magic Chart.</p>
+            <h4 class="text-md font-extrabold tracking-wide text-gray-100">Transmitting Game Logs...</h4>
+            <p class="text-xs text-gray-400">Writing match details cleanly to your dynamic Magic Chart.</p>
         </div>
     </div>
 
+    <!-- Elegant Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none max-w-xs w-full px-4"></div>
+
     <!-- Main Controller Logic -->
     <script>
-        // Pre-configured player roster & historic deck lists for fast selection
-        const playerProfileMap = {
+        const DEFAULT_ROSTER = {
             'Jordon': { name: 'Jordon', decks: ['Teysa', 'Iron Man', 'Kinnan', 'Queen', 'Narset', 'Merem'] },
             'Devon': { name: 'Devon', decks: ['Edgar', 'Satoru', 'Niv', 'Nekusar'] },
             'Xavier': { name: 'Xavier', decks: ['Muscle', 'Pantlaza', 'Six', 'Teysa', 'Lathril'] },
@@ -203,12 +213,12 @@
             'Ian': { name: 'Ian', decks: ['Aragorn', 'Atraxa'] }
         };
 
-        const rosterNames = Object.keys(playerProfileMap);
+        let playerProfileMap = {};
         let selectedPodPlayers = [];
         let activeMatch = {
             event: '',
             round: 1,
-            players: [], // { name, deck, life: 40, status: 'active' }
+            players: [],
             winner: '',
             winnerDeck: '',
             notes: ''
@@ -216,13 +226,53 @@
 
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
+            initRoster();
             lucide.createIcons();
             loadSavedConfig();
             suggestEventName();
             renderRosterGrid();
         });
 
-        // Config & Settings Handlers
+        // Load & Cache Roster
+        function initRoster() {
+            const cached = localStorage.getItem('mtg_roster_profiles');
+            if (cached) {
+                try {
+                    playerProfileMap = JSON.parse(cached);
+                } catch(e) {
+                    playerProfileMap = {...DEFAULT_ROSTER};
+                }
+            } else {
+                playerProfileMap = {...DEFAULT_ROSTER};
+                localStorage.setItem('mtg_roster_profiles', JSON.stringify(playerProfileMap));
+            }
+        }
+
+        // Custom Premium Toasts instead of alerts
+        function triggerToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'error' ? 'bg-red-950 border-red-900/60 text-red-200 shadow-red-950/20' : 'bg-gray-900 border-gray-800 text-gray-200 shadow-gray-950/40';
+            
+            toast.className = `p-3 rounded-xl border ${bgClass} shadow-xl flex items-center gap-2 text-xs font-semibold pointer-events-auto transition duration-300 transform translate-y-2 opacity-0`;
+            
+            const icon = type === 'error' ? 'alert-circle' : 'info';
+            toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-rose-500 shrink-0"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            // Trigger animation frame for entry transitions
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-1', 'scale-95');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
         function loadSavedConfig() {
             const savedUrl = localStorage.getItem('mtg_api_url');
             if (savedUrl) {
@@ -242,6 +292,7 @@
             const urlValue = document.getElementById('api-url-input').value.trim();
             localStorage.setItem('mtg_api_url', urlValue);
             toggleSettingsModal();
+            triggerToast("API Configuration saved!");
         }
 
         function toggleSettingsModal() {
@@ -267,29 +318,62 @@
             localStorage.setItem('mtg_round_num', current);
         }
 
-        // Roster Selection Screen
         function renderRosterGrid() {
             const container = document.getElementById('roster-grid');
             container.innerHTML = '';
             
-            rosterNames.forEach(name => {
+            const sortedNames = Object.keys(playerProfileMap).sort();
+            
+            sortedNames.forEach(name => {
                 const isSelected = selectedPodPlayers.includes(name);
                 const btn = document.createElement('button');
-                btn.className = `p-3 rounded-xl border text-sm font-bold tracking-wide transition duration-150 flex items-center justify-between ${
+                btn.className = `px-3 py-2 rounded-xl border text-xs font-bold tracking-wide transition duration-150 flex items-center gap-1.5 ${
                     isSelected 
-                    ? 'bg-rose-900/30 border-rose-500 text-white shadow-md' 
-                    : 'bg-gray-800/40 border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-200'
+                    ? 'bg-rose-950/40 border-rose-500 text-white shadow-md font-extrabold' 
+                    : 'bg-gray-950 border-gray-850 text-gray-400 hover:border-gray-800 hover:text-gray-200'
                 }`;
                 
-                // Active highlight indicator
                 const dotHtml = isSelected 
-                    ? `<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>`
-                    : `<span class="w-2.5 h-2.5 rounded-full bg-gray-800 border border-gray-600"></span>`;
+                    ? `<span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>`
+                    : `<span class="w-2 h-2 rounded-full bg-gray-800 border border-gray-700 shrink-0"></span>`;
                 
-                btn.innerHTML = `<span>${name}</span> ${dotHtml}`;
+                btn.innerHTML = `${dotHtml} <span>${name}</span>`;
                 btn.onclick = () => togglePlayerSelection(name);
                 container.appendChild(btn);
             });
+        }
+
+        // Inline Player Generation
+        function handleNewPlayerKey(event) {
+            if (event.key === 'Enter') {
+                createNewPlayer();
+            }
+        }
+
+        function createNewPlayer() {
+            const input = document.getElementById('new-player-input');
+            const rawName = input.value.trim();
+            if (!rawName) return;
+
+            // Format standard capitalization (e.g. "sarah" -> "Sarah")
+            const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+            if (playerProfileMap[formattedName]) {
+                triggerToast(`${formattedName} is already on the roster!`, 'error');
+                return;
+            }
+
+            // Write profiles dynamically & save to cache
+            playerProfileMap[formattedName] = {
+                name: formattedName,
+                decks: []
+            };
+
+            localStorage.setItem('mtg_roster_profiles', JSON.stringify(playerProfileMap));
+            input.value = '';
+            
+            renderRosterGrid();
+            triggerToast(`${formattedName} added to custom roster successfully!`);
         }
 
         function togglePlayerSelection(name) {
@@ -298,7 +382,7 @@
                 selectedPodPlayers.splice(index, 1);
             } else {
                 if (selectedPodPlayers.length >= 4) {
-                    // Maximum 4 player pod limit
+                    triggerToast("A Commander pod is limited to 4 players maximum!", "error");
                     return;
                 }
                 selectedPodPlayers.push(name);
@@ -319,20 +403,20 @@
             if (selectedPodPlayers.length > 0) {
                 configCard.classList.remove('hidden');
                 startBtn.removeAttribute('disabled');
-                startBtn.className = "w-full py-4 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white border-none rounded-xl font-extrabold tracking-widest text-lg transition duration-200 cursor-pointer shadow-lg flex items-center justify-center gap-2";
+                startBtn.className = "w-full py-4 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white border-none rounded-xl font-extrabold tracking-widest text-sm transition duration-200 cursor-pointer shadow-lg flex items-center justify-center gap-2";
                 
-                // Render Config Inputs for Selected Players
                 listContainer.innerHTML = '';
                 selectedPodPlayers.forEach(name => {
-                    const profile = playerProfileMap[name];
+                    const profile = playerProfileMap[name] || { name, decks: [] };
+                    const defaultDeck = profile.decks[0] || '';
                     const row = document.createElement('div');
-                    row.className = "bg-gray-800/50 p-3 rounded-lg border border-gray-800 space-y-2";
+                    row.className = "bg-gray-950 border border-gray-850 p-3 rounded-2xl space-y-2";
                     row.innerHTML = `
                         <div class="flex items-center justify-between">
-                            <span class="font-extrabold text-white text-sm">${name}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Status:</span>
-                                <select id="status-${name}" class="bg-gray-900 border border-gray-700 rounded text-xs px-1 py-0.5 text-rose-400 font-bold">
+                            <span class="font-extrabold text-white text-xs">${name}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Status:</span>
+                                <select id="status-${name}" class="bg-gray-900 border border-gray-800 rounded px-1 py-0.5 text-[10px] text-rose-400 font-bold focus:outline-none">
                                     <option value="active">Active</option>
                                     <option value="out">Out</option>
                                     <option value="bye">Bye</option>
@@ -340,19 +424,18 @@
                             </div>
                         </div>
                         <div class="space-y-1.5">
-                            <input type="text" id="deck-${name}" value="${profile.decks[0] || ''}" 
-                                class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-white focus:outline-none focus:border-rose-500" 
+                            <input type="text" id="deck-${name}" value="${defaultDeck}" 
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-rose-500" 
                                 placeholder="Deck Name...">
                             <div class="flex flex-wrap gap-1" id="quick-decks-${name}"></div>
                         </div>
                     `;
                     listContainer.appendChild(row);
 
-                    // Add quick-select buttons for historic decks
                     const quickDeckContainer = document.getElementById(`quick-decks-${name}`);
                     profile.decks.slice(0, 4).forEach(deckName => {
                         const quickBtn = document.createElement('button');
-                        quickBtn.className = "text-[10px] bg-gray-800 text-gray-400 border border-gray-700 px-2 py-0.5 rounded hover:bg-gray-700 hover:text-white transition";
+                        quickBtn.className = "text-[9px] bg-gray-900 text-gray-400 border border-gray-800 px-2 py-0.5 rounded-lg hover:bg-gray-800 hover:text-white transition";
                         quickBtn.innerText = deckName;
                         quickBtn.onclick = () => {
                             document.getElementById(`deck-${name}`).value = deckName;
@@ -363,7 +446,7 @@
             } else {
                 configCard.classList.add('hidden');
                 startBtn.setAttribute('disabled', 'true');
-                startBtn.className = "w-full py-4 bg-gray-800 text-gray-500 border border-gray-700 rounded-xl font-extrabold tracking-widest text-lg transition duration-200 cursor-not-allowed shadow-lg flex items-center justify-center gap-2";
+                startBtn.className = "w-full py-4 bg-gray-800 text-gray-500 border border-gray-700/60 rounded-xl font-extrabold tracking-widest text-sm transition duration-200 cursor-not-allowed shadow-lg flex items-center justify-center gap-2";
             }
         }
 
@@ -382,19 +465,16 @@
                 };
             });
 
-            // Hide Setup Screen, Show Counter
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
             
             renderLifeCounterGrid();
         }
 
-        // ACTIVE LIFE COUNTER SCREEN
         function renderLifeCounterGrid() {
             const container = document.getElementById('life-counter-grid');
             container.innerHTML = '';
             
-            // Layout is customized dynamically to handle 1, 2, 3, or 4 players cleanly
             const activePlayers = activeMatch.players;
             
             activePlayers.forEach(player => {
@@ -408,15 +488,13 @@
                 }`;
                 
                 card.innerHTML = `
-                    <!-- Header with Name, Deck -->
                     <div class="z-10">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h3 class="font-extrabold text-lg text-white tracking-wide">${player.name}</h3>
-                                <p class="text-[11px] text-gray-400 italic truncate max-w-[120px]">${player.deck}</p>
+                                <h3 class="font-extrabold text-md text-white tracking-wide">${player.name}</h3>
+                                <p class="text-[10px] text-gray-400 italic truncate max-w-[100px]">${player.deck}</p>
                             </div>
-                            <!-- Status Selector inside game board -->
-                            <select onchange="updateLiveStatus('${player.name}', this.value)" class="bg-gray-800 text-[10px] font-bold py-1 px-1.5 rounded focus:outline-none">
+                            <select onchange="updateLiveStatus('${player.name}', this.value)" class="bg-gray-850 text-[9px] font-bold py-1 px-1.5 rounded focus:outline-none">
                                 <option value="active" ${player.status === 'active' ? 'selected' : ''}>Active</option>
                                 <option value="out" ${player.status === 'out' ? 'selected' : ''}>Out</option>
                                 <option value="bye" ${player.status === 'bye' ? 'selected' : ''}>Bye</option>
@@ -424,38 +502,33 @@
                         </div>
                     </div>
                     
-                    <!-- Giant Life Value Display -->
-                    <div class="flex justify-center items-center py-6 z-10">
-                        <span id="life-val-${player.name}" class="text-6xl font-black tracking-tighter ${isDead ? 'text-gray-600 line-through' : 'text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-300'}">
+                    <div class="flex justify-center items-center py-4 z-10">
+                        <span id="life-val-${player.name}" class="text-5xl font-black tracking-tighter ${isDead ? 'text-gray-600 line-through' : 'text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-300'}">
                             ${player.life}
                         </span>
                     </div>
 
-                    <!-- Touch Interactive Increments -->
-                    <div class="grid grid-cols-2 gap-2 z-10">
-                        <!-- Left decrements -->
+                    <div class="grid grid-cols-2 gap-1.5 z-10">
                         <div class="flex flex-col gap-1.5">
-                            <button onclick="changeLife('${player.name}', -1)" class="py-3 bg-red-950/25 border border-red-900/40 hover:bg-red-900/30 rounded-lg text-red-400 font-extrabold flex items-center justify-center gap-0.5 text-sm">
+                            <button onclick="changeLife('${player.name}', -1)" class="py-2.5 bg-red-950/25 border border-red-900/40 hover:bg-red-900/30 rounded-xl text-red-400 font-extrabold flex items-center justify-center gap-0.5 text-xs">
                                 -1
                             </button>
-                            <button onclick="changeLife('${player.name}', -5)" class="py-2.5 bg-red-950/50 border border-red-900/60 hover:bg-red-900/50 rounded-lg text-red-300 font-extrabold text-xs">
+                            <button onclick="changeLife('${player.name}', -5)" class="py-2 bg-red-950/50 border border-red-900/60 hover:bg-red-900/50 rounded-xl text-red-300 font-extrabold text-[10px]">
                                 -5
                             </button>
                         </div>
-                        <!-- Right increments -->
                         <div class="flex flex-col gap-1.5">
-                            <button onclick="changeLife('${player.name}', 1)" class="py-3 bg-emerald-950/20 border border-emerald-900/40 hover:bg-emerald-900/30 rounded-lg text-emerald-400 font-extrabold flex items-center justify-center gap-0.5 text-sm">
+                            <button onclick="changeLife('${player.name}', 1)" class="py-2.5 bg-emerald-950/20 border border-emerald-900/40 hover:bg-emerald-900/30 rounded-xl text-emerald-400 font-extrabold flex items-center justify-center gap-0.5 text-xs">
                                 +1
                             </button>
-                            <button onclick="changeLife('${player.name}', 5)" class="py-2.5 bg-emerald-950/45 border border-emerald-900/60 hover:bg-emerald-900/50 rounded-lg text-emerald-300 font-extrabold text-xs">
+                            <button onclick="changeLife('${player.name}', 5)" class="py-2 bg-emerald-950/45 border border-emerald-900/60 hover:bg-emerald-900/50 rounded-xl text-emerald-300 font-extrabold text-[10px]">
                                 +5
                             </button>
                         </div>
                     </div>
 
-                    <!-- Watermark Indicator -->
                     <div class="absolute right-[-20px] bottom-[-20px] text-gray-800 opacity-10 pointer-events-none">
-                        <i data-lucide="shield" class="w-32 h-32"></i>
+                        <i data-lucide="shield" class="w-24 h-24"></i>
                     </div>
                 `;
                 container.appendChild(card);
@@ -469,14 +542,12 @@
             
             player.life = Math.max(0, player.life + amt);
             
-            // Check if player died
             if (player.life === 0 && player.status === 'active') {
                 player.status = 'out';
             } else if (player.life > 0 && player.status === 'out') {
                 player.status = 'active';
             }
 
-            // Sync visual UI elements
             const cardEl = document.getElementById(`life-card-${playerName}`);
             const textEl = document.getElementById(`life-val-${playerName}`);
             textEl.innerText = player.life;
@@ -499,36 +570,27 @@
             if (!player) return;
             
             player.status = newStatus;
-            
-            // Refresh complete panel to guarantee clean boundaries
             renderLifeCounterGrid();
             checkAutoGameEnd();
         }
 
-        // End Phase Trigger Logic
         function checkAutoGameEnd() {
-            // Find players who are still active (not eliminated or on out/bye)
             const survivors = activeMatch.players.filter(p => p.status === 'active' && p.life > 0);
-            
-            // If only one player has life left, trigger match complete state
             if (survivors.length === 1) {
                 initiateMatchSettlement(survivors[0]);
             }
         }
 
         function endGameEarly() {
-            // Pick default survivor or first active player
             const survivors = activeMatch.players.filter(p => p.status === 'active' && p.life > 0);
             const chosenWinner = survivors.length > 0 ? survivors[0] : activeMatch.players[0];
             initiateMatchSettlement(chosenWinner);
         }
 
         function initiateMatchSettlement(winnerObject) {
-            // Shift screens
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('log-screen').classList.remove('hidden');
 
-            // Populate winner selection form options dynamically
             const winnerSelect = document.getElementById('winner-select');
             winnerSelect.innerHTML = '';
             
@@ -542,7 +604,6 @@
                 winnerSelect.appendChild(opt);
             });
 
-            // Auto fill winning deck info
             updateWinnerDeckInput();
             winnerSelect.onchange = updateWinnerDeckInput;
         }
@@ -560,25 +621,22 @@
             const apiEndpoint = localStorage.getItem('mtg_api_url');
             
             if (!apiEndpoint) {
-                alert("Please click the gear icon in the top right corner and save your Google Apps Script URL first!");
+                triggerToast("Set your Google Web App URL in settings (gear icon) first!", "error");
                 return;
             }
 
-            // Show Transmitting spinner
             document.getElementById('sync-overlay').classList.remove('hidden');
 
-            // Collect payload
-            const winnerName = document.getElementById('winner-select').value;
+            const winnerSelect = document.getElementById('winner-select');
+            const winnerName = winnerSelect.value || (winnerSelect.options[winnerSelect.selectedIndex] ? winnerSelect.options[winnerSelect.selectedIndex].text : "").trim();
             const winnerDeck = document.getElementById('winner-deck-input').value.trim();
             const notes = document.getElementById('match-notes').value.trim();
 
-            // Transform pod participants back to match the dynamic script expectation:
-            // [{ name: 'jordon', deck: 'Narset', status: 'active' }, ...]
             const activePlayersPayload = activeMatch.players.map(p => {
                 return {
                     name: p.name.toLowerCase().trim(),
                     deck: p.deck,
-                    status: p.status // 'active', 'out', or 'bye'
+                    status: p.status
                 };
             });
 
@@ -591,7 +649,18 @@
                 activePlayers: activePlayersPayload
             };
 
-            // Post request to Google Apps Script
+            // Write deck back to roster profiles automatically
+            activeMatch.players.forEach(p => {
+                if (playerProfileMap[p.name]) {
+                    const currentDecks = playerProfileMap[p.name].decks;
+                    if (!currentDecks.includes(p.deck)) {
+                        currentDecks.unshift(p.deck); // insert as priority
+                        playerProfileMap[p.name].decks = currentDecks.slice(0, 10); // cap size
+                        localStorage.setItem('mtg_roster_profiles', JSON.stringify(playerProfileMap));
+                    }
+                }
+            });
+
             fetch(apiEndpoint, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -601,26 +670,19 @@
                 body: JSON.stringify(finalPayload)
             })
             .then(() => {
-                // Since 'no-cors' does not return standard body reads easily, 
-                // we treat a clean execution callback as a successful write
                 setTimeout(() => {
                     document.getElementById('sync-overlay').classList.add('hidden');
-                    
-                    // Trigger custom visual confirm modal
-                    alert(`Match logged successfully! ${winnerName} won with ${winnerDeck}.`);
-                    
-                    // Clean up for next round
+                    triggerToast(`Logged successfully! Winner: ${winnerName}`);
                     incrementAndResetForNextRound();
                 }, 1000);
             })
             .catch(error => {
                 document.getElementById('sync-overlay').classList.add('hidden');
-                alert(`Transmission failed: ${error.message}\nDouble check that your Web App is correctly deployed as 'Anyone' on Apps Script!`);
+                triggerToast(`Transmission failed: ${error.message}`, 'error');
             });
         }
 
         function incrementAndResetForNextRound() {
-            // Auto increment round in setup screen for speed entry on next game
             const currentRound = parseInt(document.getElementById('round-num').value) || 1;
             document.getElementById('round-num').value = currentRound + 1;
             localStorage.setItem('mtg_round_num', currentRound + 1);
@@ -629,7 +691,6 @@
         }
 
         function resetApp() {
-            // Reset to setup state cleanly
             selectedPodPlayers = [];
             activeMatch = {
                 event: '',
